@@ -27,23 +27,35 @@ namespace E7.Protobuf
         {
             get
             {
+                var fromPrefs = Prefs.IncludePaths;
+
                 string[] protoFiles = AllProtoFiles;
 
-                string[] includePaths = new string[protoFiles.Length];
+                string[] includePaths = new string[protoFiles.Length + fromPrefs.Length];
                 for (int i = 0; i < protoFiles.Length; i++)
                 {
                     string protoFolder = Path.GetDirectoryName(protoFiles[i]);
                     includePaths[i] = protoFolder;
                 }
+
+                for (int i = 0; i < fromPrefs.Length; i++)
+                {
+                    includePaths[i + protoFiles.Length] = fromPrefs[i];
+                }
                 return includePaths;
             }
         }
+        
+        private static ProtoPrefs Prefs => ProtoPrefs.Instance;
 
         static bool anyChanges = false;
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
+            if (!Prefs || string.IsNullOrWhiteSpace(Prefs.excPath))
+                return;
+
             anyChanges = false;
-            if (ProtoPrefs.enabled == false)
+            if (Prefs.enabled == false)
             {
                 return;
             }
@@ -75,14 +87,17 @@ namespace E7.Protobuf
         /// </summary>
         internal static void CompileAllInProject()
         {
-            if (ProtoPrefs.logStandard)
+            if (!Prefs)
+                return;
+
+            if (Prefs.logStandard)
             {
                 UnityEngine.Debug.Log("Protobuf Unity : Compiling all .proto files in the project...");
             }
 
             foreach (string s in AllProtoFiles)
             {
-                if (ProtoPrefs.logStandard)
+                if (Prefs.logStandard)
                 {
                     UnityEngine.Debug.Log("Protobuf Unity : Compiling " + s);
                 }
@@ -114,18 +129,18 @@ namespace E7.Protobuf
                 }
 
                 // Checking if the user has set valid path (there is probably a better way)
-                if (ProtoPrefs.grpcPath != "ProtobufUnity_GrpcPath" && ProtoPrefs.grpcPath != string.Empty)
-                    options += $" --grpc_out={outputPath} --plugin=protoc-gen-grpc={ProtoPrefs.grpcPath}";
+                if (Prefs.grpcPath != "ProtobufUnity_GrpcPath" && Prefs.grpcPath != string.Empty)
+                    options += $" --grpc_out={outputPath} --plugin=protoc-gen-grpc={Prefs.grpcPath}";
                 //string combinedPath = string.Join(" ", optionFiles.Concat(new string[] { protoFileSystemPath }));
 
                 string finalArguments = string.Format("\"{0}\"", protoFileSystemPath) + string.Format(options, outputPath);
 
-                if (ProtoPrefs.logStandard)
+                if (Prefs.logStandard)
                 {
                     UnityEngine.Debug.Log("Protobuf Unity : Final arguments :\n" + finalArguments);
                 }
 
-                ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = ProtoPrefs.excPath, Arguments = finalArguments };
+                ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = Prefs.excPath, Arguments = finalArguments };
 
                 Process proc = new Process() { StartInfo = startInfo };
                 proc.StartInfo.UseShellExecute = false;
@@ -137,7 +152,7 @@ namespace E7.Protobuf
                 string error = proc.StandardError.ReadToEnd();
                 proc.WaitForExit();
 
-                if (ProtoPrefs.logStandard)
+                if (Prefs.logStandard)
                 {
                     if (output != "")
                     {
@@ -146,7 +161,7 @@ namespace E7.Protobuf
                     UnityEngine.Debug.Log("Protobuf Unity : Compiled " + Path.GetFileName(protoFileSystemPath));
                 }
 
-                if (ProtoPrefs.logError && error != "")
+                if (Prefs.logError && error != "")
                 {
                     UnityEngine.Debug.LogError("Protobuf Unity : " + error);
                 }
