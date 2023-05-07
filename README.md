@@ -1,8 +1,9 @@
 # Scriptable Object Workflow
-## Requirements
+## Installation
 1. Install "NuGetForUnity" from "https://github.com/burakaydinofficial/NuGetForUnity.git?path=/src/NuGetForUnity" as a Package
 2. Install "Google.Protobuf" and "Google.Protobuf.Tools" with "NuGetForUnity"
-3. A ProtoPrefs asset in the project
+3. Install this repository as a Package
+4. Create a ProtoPrefs asset in the project
 
 ## Usage
 1. Configure ProtoPrefs asset
