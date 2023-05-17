@@ -109,8 +109,13 @@ namespace E7.Protobuf
 
         private static bool CompileProtobufAssetPath(string assetPath, string[] includePaths)
         {
-            string protoFileSystemPath = Directory.GetParent(Application.dataPath) + Path.DirectorySeparatorChar.ToString() + assetPath;
+            string protoFileSystemPath = AssetPathToSystemPath(assetPath);
             return CompileProtobufSystemPath(protoFileSystemPath, includePaths);
+        }
+
+        private static string AssetPathToSystemPath(string assetPath)
+        {
+            return Directory.GetParent(Application.dataPath) + Path.DirectorySeparatorChar.ToString() + assetPath;
         }
 
         private static bool CompileProtobufSystemPath(string protoFileSystemPath, string[] includePaths)
@@ -126,7 +131,8 @@ namespace E7.Protobuf
                 string options = " --csharp_out \"{0}\" ";
                 foreach (string s in includePaths)
                 {
-                    options += string.Format(" --proto_path \"{0}\" ", s.Replace('\\', '/'));
+                    var p = Path.IsPathRooted(s) ? s : AssetPathToSystemPath(s);
+                    options += string.Format(" --proto_path \"{0}\" ", p.Replace('\\', '/'));
                 }
 
                 // Checking if the user has set valid path (there is probably a better way)
