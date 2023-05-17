@@ -117,10 +117,11 @@ namespace E7.Protobuf
         {
             //Do not compile changes coming from UPM package.
             if (protoFileSystemPath.Contains("Packages/com.e7.protobuf-unity")) return false;
+            protoFileSystemPath = protoFileSystemPath.Replace('\\', '/');
 
             if (Path.GetExtension(protoFileSystemPath) == ".proto")
             {
-                string outputPath = Path.GetDirectoryName(protoFileSystemPath);
+                string outputPath = Path.GetDirectoryName(protoFileSystemPath).Replace('\\', '/');
 
                 string options = " --csharp_out \"{0}\" ";
                 foreach (string s in includePaths)
@@ -130,7 +131,7 @@ namespace E7.Protobuf
 
                 // Checking if the user has set valid path (there is probably a better way)
                 if (Prefs.grpcPath != "ProtobufUnity_GrpcPath" && Prefs.grpcPath != string.Empty)
-                    options += $" --grpc_out={outputPath} --plugin=protoc-gen-grpc={Prefs.grpcPath}";
+                    options += $" --grpc_out=\"{outputPath}\" --plugin=protoc-gen-grpc=\"{Prefs.grpcPath}\"";
                 //string combinedPath = string.Join(" ", optionFiles.Concat(new string[] { protoFileSystemPath }));
 
                 string finalArguments = string.Format("\"{0}\"", protoFileSystemPath) + string.Format(options, outputPath);
