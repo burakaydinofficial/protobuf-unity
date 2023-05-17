@@ -126,7 +126,7 @@ namespace E7.Protobuf
                 string options = " --csharp_out \"{0}\" ";
                 foreach (string s in includePaths)
                 {
-                    options += string.Format(" --proto_path \"{0}\" ", s);
+                    options += string.Format(" --proto_path \"{0}\" ", s.Replace('\\', '/'));
                 }
 
                 // Checking if the user has set valid path (there is probably a better way)
